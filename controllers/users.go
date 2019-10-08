@@ -40,9 +40,16 @@ func CreateUser(userRepo repository.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user models.User
 		json.NewDecoder(c.Request.Body).Decode(&user)
+		if user.Username=="" || user.Password== ""{
+			c.JSON(http.StatusBadRequest,map[string]string{
+				"message":"username and password is not nullable",
+			})
+			return
+		}
 		user, err := userRepo.Save(user)
 		if err != nil {
 			c.Error(err)
+			return
 		}
 		c.JSON(http.StatusOK, user)
 	}

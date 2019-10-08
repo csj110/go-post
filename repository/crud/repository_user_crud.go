@@ -39,8 +39,7 @@ func (r *repositoryuserCRUD) FindAll() ([]models.User,error){
 	done:=make(chan bool)
 	go func (ch chan<- bool)  {
 		defer close(done)
-
-		if err=r.db.Debug().Model(&models.User{}).Select("username").Limit(10).Find(&users).Error;err!=nil{
+		if err=r.db.Debug().Model(&models.User{}).Select("username,id").Limit(10).Find(&users).Error;err!=nil{
 			done <- false
 			return
 		}

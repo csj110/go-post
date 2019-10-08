@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -52,5 +54,33 @@ func CreatePost(postRepo repository.PostRepository) gin.HandlerFunc {
 			c.Error(err)
 		}
 		c.JSON(http.StatusOK, post)
+	}
+}
+
+func UpdatePost(postRepo repository.PostRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		
+		var post models.Post
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
+		json.NewDecoder(c.Request.Body).Decode(&post)
+		_, err := postRepo.UpdatePost(uint(id), post)
+		if err != nil {
+			if gorm.IsRecordNotFoundError(err) {
+				c.JSON(http.StatusBadRequest, nil)
+			} else {
+				c.JSON(http.StatusInternalServerError, nil)
+			}
+		}
+		c.JSON(http.StatusOK, nil)
+	}
+}
+func DeletePost(postRepo repository.PostRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
+		_, err := postRepo.DeletePost(uint(id))
+		if err != nil {
+			c.Error(err)
+		}
+		c.JSON(http.StatusOK, nil)
 	}
 }

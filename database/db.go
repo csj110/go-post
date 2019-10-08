@@ -7,5 +7,5 @@ import (
 )
 
 func Connect() (db *gorm.DB,err error) {
-	return gorm.Open("mysql", "root:19941110@/blog?charset=utf8&parseTime=True&loc=Local")
+	return gorm.Open("mysql", "root:1994@/blog?charset=utf8&parseTime=True&loc=Local")
 }

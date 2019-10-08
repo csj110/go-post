@@ -2,6 +2,7 @@ package crud
 
 import (
 	"blogos/models"
+	"errors"
 
 	"github.com/jinzhu/gorm"
 )
@@ -21,6 +22,10 @@ func (r *repositoryPostCRUD) Save(post models.Post) (models.Post, error) {
 		defer close(done)
 		if err = r.db.Debug().Model(&models.Post{}).Create(&post).Error; err != nil {
 			done <- false
+			return
+		}
+		if err=r.db.Debug().Model(&post).Related(&post.Author,"author_id").Error;err!=nil{
+			done<-false
 			return
 		}
 		done <- true
@@ -93,5 +98,46 @@ func (r *repositoryPostCRUD) FindById(pid uint) (models.Post, error) {
 		return post, nil
 	} else {
 		return models.Post{}, err
+	}
+}
+
+func (r *repositoryPostCRUD) UpdatePost(pid uint, post models.Post) (int64, error) {
+	var err error
+	done := make(chan bool)
+	go func(ch chan<- bool) {
+		defer close(done)
+		if err = r.db.Debug().Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).UpdateColumns(&post).Error; err != nil {
+			done <- false
+			return
+		}
+		done <- true
+	}(done)
+	if res := <-done; res {
+		return 1, nil
+	} else {
+		if gorm.IsRecordNotFoundError(err) {
+			return 0, errors.New("Post not Found")
+		}
+		return 0, err
+	}
+}
+func (r *repositoryPostCRUD) DeletePost(pid uint) (int64, error) {
+	var err error
+	done := make(chan bool)
+	go func(ch chan<- bool) {
+		defer close(done)
+		if err = r.db.Debug().Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).Delete(models.Post{}).Error; err != nil {
+			done <- false
+			return
+		}
+		done <- true
+	}(done)
+	if res := <-done; res {
+		return 1, nil
+	} else {
+		if gorm.IsRecordNotFoundError(err) {
+			return 0, errors.New("Post not Found")
+		}
+		return 0, err
 	}
 }

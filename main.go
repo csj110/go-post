@@ -3,6 +3,7 @@ package main
 import (
 	"blogos/controllers"
 	"blogos/database"
+	"blogos/middlewares"
 	"blogos/models"
 	"blogos/repository/crud"
 	"fmt"
@@ -23,8 +24,10 @@ func start() {
 	}
 	defer db.Close()
 	r := gin.Default()
+
 	userRepo := crud.NewRepositoryUserCRUD(db)
 	postRepo := crud.NewRepositoryPostCRUD(db)
+
 	rUsers := r.Group("/users")
 	{
 		rUsers.GET("", controllers.GetUsers(userRepo))
@@ -35,10 +38,18 @@ func start() {
 	}
 
 	rPosts := r.Group("/posts")
+	rPosts.Use(middlewares.AuthCheck())
 	{
 		rPosts.GET("", controllers.GetPosts(postRepo))
 		rPosts.GET("/:id", controllers.GetPost(postRepo))
 		rPosts.POST("", controllers.CreatePost(postRepo))
+		rPosts.PUT("/:id", controllers.UpdatePost(postRepo))
+		rPosts.DELETE("/:id", controllers.DeletePost(postRepo))
+	}
+
+	rAuth := r.Group("/auth")
+	{
+		rAuth.POST("/login", controllers.Login())
 	}
 
 	r.Run()
@@ -73,4 +84,5 @@ func migrate() {
 	}
 	db.Debug().Model(&user).Related(&user.Posts, "author_id")
 	fmt.Println(user)
+
 }
