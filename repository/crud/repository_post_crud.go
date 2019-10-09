@@ -101,12 +101,12 @@ func (r *repositoryPostCRUD) FindById(pid uint) (models.Post, error) {
 	}
 }
 
-func (r *repositoryPostCRUD) UpdatePost(pid uint, post models.Post) (int64, error) {
+func (r *repositoryPostCRUD) UpdatePost(pid uint, post models.Post,uid uint) (int64, error) {
 	var err error
 	done := make(chan bool)
 	go func(ch chan<- bool) {
 		defer close(done)
-		if err = r.db.Debug().Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).UpdateColumns(&post).Error; err != nil {
+		if err = r.db.Debug().Model(&models.Post{}).Where("id = ? and author_id = ?", pid,uid).Take(&models.Post{}).UpdateColumns(&post).Error; err != nil {
 			done <- false
 			return
 		}
@@ -121,12 +121,12 @@ func (r *repositoryPostCRUD) UpdatePost(pid uint, post models.Post) (int64, erro
 		return 0, err
 	}
 }
-func (r *repositoryPostCRUD) DeletePost(pid uint) (int64, error) {
+func (r *repositoryPostCRUD) DeletePost(pid uint,uid uint) (int64, error) {
 	var err error
 	done := make(chan bool)
 	go func(ch chan<- bool) {
 		defer close(done)
-		if err = r.db.Debug().Model(&models.Post{}).Where("id = ?", pid).Take(&models.Post{}).Delete(models.Post{}).Error; err != nil {
+		if err = r.db.Debug().Model(&models.Post{}).Where("id = ? and author_id = ?", pid,uid).Take(&models.Post{}).Delete(models.Post{}).Error; err != nil {
 			done <- false
 			return
 		}
