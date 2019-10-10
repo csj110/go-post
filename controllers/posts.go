@@ -62,13 +62,14 @@ func CreatePost(postRepo repository.PostRepository) gin.HandlerFunc {
 
 func UpdatePost(postRepo repository.PostRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if user_id, ok := c.Keys["user_id"].(float64); !ok {
+		user_id, ok := c.Keys["user_id"].(float64) 
+		if !ok {
 			return
 		}
 		var post models.Post
 		id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
 		json.NewDecoder(c.Request.Body).Decode(&post)
-		_, err := postRepo.UpdatePost(uint(id), post,user_id)
+		_, err := postRepo.UpdatePost(uint(id), post,uint(user_id))
 		if err != nil {
 			if gorm.IsRecordNotFoundError(err) {
 				c.JSON(http.StatusBadRequest, nil)
@@ -81,11 +82,12 @@ func UpdatePost(postRepo repository.PostRepository) gin.HandlerFunc {
 }
 func DeletePost(postRepo repository.PostRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if user_id, ok := c.Keys["user_id"].(float64); !ok {
+		user_id, ok := c.Keys["user_id"].(float64)
+		if !ok {
 			return
 		}
 		id, _ := strconv.ParseInt(c.Param("id"), 10, 32)
-		_, err := postRepo.DeletePost(uint(id),user_id)
+		_, err := postRepo.DeletePost(uint(id),uint(user_id))
 		if err != nil {
 			c.Error(err)
 		}

@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"blogos/auth"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -19,11 +18,11 @@ func AuthCheck() gin.HandlerFunc {
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, map[string]string{
 					"message": "no authorized",
+					"error":err.Error(),
 				})
 				c.Abort()
 			}
 			c.Set("user_id", user_id)
-			fmt.Println(user_id,"sag")
 			c.Next()
 		} else {
 			c.JSON(http.StatusBadRequest, map[string]string{
